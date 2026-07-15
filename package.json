@@ -1,0 +1,18 @@
+{
+  "name": "gage-diamond",
+  "version": "1.0.0",
+  "description": "Gage Diamond — Playwright E2E test automation framework",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "csv-parse": "^5.5.5",
+    "nodemailer": "^6.9.13"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
+}

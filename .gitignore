@@ -1,0 +1,16 @@
+# Test Companion onboarding (local, per-machine)
+.test-companion/
+
+# Environment secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Sensitive test data
+data/data.csv
+
+# Playwright artifacts
+node_modules/
+playwright-report/
+test-results/
+screenshots/
