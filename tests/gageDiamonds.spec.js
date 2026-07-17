@@ -27,21 +27,21 @@ const {
 const testData = getTestData('data/data.csv');
 
 // ── Suite ────────────────────────────────────────────────────────────────────
-test.describe('Gage Diamonds - E2E Purchase Flow', () => {
+test.describe('Gage Diamonds - E2E Purchase Flow @smoke', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
 
   // ── TC-01: Account verification ──────────────────────────────────────────
-  test('TC-01: User Account Verification - Create if not exists', async ({ page }) => {
+  test('TC-01: User Account Verification - Create if not exists @smoke', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.ensureAccountAndLogin(testData.username, testData.password);
     console.log(`Account verified for: ${testData.username}`);
   });
 
   // ── TC-02: Login + cookies ───────────────────────────────────────────────
-  test('TC-02: Login with valid credentials and accept cookies', async ({ page }) => {
+  test('TC-02: Login with valid credentials and accept cookies @smoke', async ({ page }) => {
     const homePage  = new HomePage(page);
     const loginPage = new LoginPage(page);
 
@@ -54,7 +54,7 @@ test.describe('Gage Diamonds - E2E Purchase Flow', () => {
   });
 
   // ── TC-03: Full E2E ──────────────────────────────────────────────────────
-  test('TC-03: Full E2E - Select Product, Add to Cart, Checkout, Place Order', async ({ page }) => {
+  test('TC-03: Full E2E - Select Product, Add to Cart, Checkout, Place Order @smoke', async ({ page }) => {
     const homePage     = new HomePage(page);
     const loginPage    = new LoginPage(page);
     const productPage  = new ProductPage(page);
@@ -184,7 +184,7 @@ test.describe('Gage Diamonds - E2E Purchase Flow', () => {
     } else {
       console.log('ℹ️  Reached payment page. BigCommerce hosted iframes are cross-origin — all pre-payment steps verified.');
       expect(confirmationUrl).toContain('gagediamonds.com');
-      console.log('✅ E2E test completed — all steps up to payment verified');
+      console.log('✅ Gage Diamond End to End Happy Path Testing Passed');
     }
   });
 
@@ -196,9 +196,9 @@ const testResults = {};
 
 test.afterEach(async ({}, testInfo) => {
   const resultMap = {
-    'TC-01: User Account Verification - Create if not exists': [1],
-    'TC-02: Login with valid credentials and accept cookies':  [2],
-    'TC-03: Full E2E - Select Product, Add to Cart, Checkout, Place Order': [3, 4, 5, 6, 7, 8],
+    'TC-01: User Account Verification - Create if not exists @smoke': [1],
+    'TC-02: Login with valid credentials and accept cookies @smoke':  [2],
+    'TC-03: Full E2E - Select Product, Add to Cart, Checkout, Place Order @smoke': [3, 4, 5, 6, 7, 8],
   };
   const status = testInfo.status === 'passed' ? 'Pass' : 'Fail';
   const snos = resultMap[testInfo.title] || [];
