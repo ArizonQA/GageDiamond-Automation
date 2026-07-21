@@ -184,7 +184,7 @@ test.describe('Gage Diamonds - E2E Purchase Flow @smoke', () => {
     } else {
       console.log('ℹ️  Reached payment page. BigCommerce hosted iframes are cross-origin — all pre-payment steps verified.');
       expect(confirmationUrl).toContain('gagediamonds.com');
-      console.log('✅ Gage Diamond End to End Happy Path Testing Passed');
+      console.log('✅ Gage Diamond End to End Testing Passed');
     }
   });
 
