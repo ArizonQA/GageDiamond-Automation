@@ -188,44 +188,36 @@ test.describe('Gage Diamonds - E2E Purchase Flow @smoke', () => {
     }
   });
 
+  // ── Track results and send ONE email after all tests finish ─────────────────
+  const testResults = {};
+
+  // Only record the FINAL outcome (skip intermediate retry attempts)
+  test.afterEach(async ({}, testInfo) => {
+    if (testInfo.retry < testInfo.project.retries && testInfo.status !== 'passed') return;
+    const resultMap = {
+      'TC-01: User Account Verification - Create if not exists @smoke': [1],
+      'TC-02: Login with valid credentials and accept cookies @smoke':  [2],
+      'TC-03: Full E2E - Select Product, Add to Cart, Checkout, Place Order @smoke': [3, 4, 5, 6, 7, 8],
+    };
+    const status = testInfo.status === 'passed' ? 'Pass' : 'Fail';
+    const snos = resultMap[testInfo.title] || [];
+    snos.forEach(sno => { testResults[sno] = status; });
+  });
+
+  // Send ONE email after all tests (including retries) have finished
+  test.afterAll(async () => {
+    try {
+      const passed = Object.values(testResults).filter(r => r === 'Pass').length;
+      const failed = Object.values(testResults).filter(r => r === 'Fail').length;
+      await sendReportEmail({
+        to:         testData.email || process.env.TEST_EMAIL,
+        reportPath: 'playwright-report/index.html',
+        summary:    { total: 8, passed, failed },
+        results:    testResults,
+      });
+    } catch (e) {
+      console.log('Email report skipped:', e.message);
+    }
+  });
+
 });
-
-// ── Global teardown: send email report ──────────────────────────────────────
-// Track per-test results so the email table reflects actual outcomes
-const testResults = {};
-
-// Only record the FINAL outcome (skip intermediate retry attempts)
-test.afterEach(async ({}, testInfo) => {
-  if (testInfo.retry < testInfo.project.retries && testInfo.status !== 'passed') return;
-  const resultMap = {
-    'TC-01: User Account Verification - Create if not exists @smoke': [1],
-    'TC-02: Login with valid credentials and accept cookies @smoke':  [2],
-    'TC-03: Full E2E - Select Product, Add to Cart, Checkout, Place Order @smoke': [3, 4, 5, 6, 7, 8],
-  };
-  const status = testInfo.status === 'passed' ? 'Pass' : 'Fail';
-  const snos = resultMap[testInfo.title] || [];
-  snos.forEach(sno => { testResults[sno] = status; });
-});
-
-// Send ONE email after all tests (including retries) have finished
-test.afterAll(async () => {
-  try {
-    const passed = Object.values(testResults).filter(r => r === 'Pass').length;
-    const failed = Object.values(testResults).filter(r => r === 'Fail').length;
-    await sendReportEmail({
-      to:         testData.email || process.env.TEST_EMAIL,
-      reportPath: 'playwright-report/index.html',
-      summary:    { total: 8, passed, failed },
-      results:    testResults,
-    });
-  } catch (e) {
-    console.log('Email report skipped:', e.message);
-  }
-});
-
-// ── Previous afterEach email approach (caused multiple emails due to retries) ──
-// test.afterEach(async ({}, testInfo) => {
-//   if (testInfo.title.includes('TC-03')) {
-//     await sendReportEmail({ ... });
-//   }
-// });
