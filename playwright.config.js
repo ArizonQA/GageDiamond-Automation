@@ -10,7 +10,7 @@ module.exports = defineConfig({
     ['list']
   ],
   use: {
-    headless: false,
+    headless: true,
     baseURL: process.env.BASE_URL || 'https://devbox.gagediamonds.com',
     screenshot: 'on',
     video: 'retain-on-failure',
