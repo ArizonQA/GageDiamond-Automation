@@ -203,23 +203,39 @@ test.afterEach(async ({}, testInfo) => {
   const status = testInfo.status === 'passed' ? 'Pass' : 'Fail';
   const snos = resultMap[testInfo.title] || [];
   snos.forEach(sno => { testResults[sno] = status; });
-});
 
-test.afterAll(async () => {
-  try {
-    const fs = require('fs');
-    const reportPath = 'playwright-report/index.html';
-    const passed = Object.values(testResults).filter(r => r === 'Pass').length;
-    const failed = Object.values(testResults).filter(r => r === 'Fail').length;
-    if (fs.existsSync(reportPath)) {
+  // Send email after the last test completes (avoids afterAll timing issue with HTML report)
+  if (testInfo.title.includes('TC-03')) {
+    try {
+      const passed = Object.values(testResults).filter(r => r === 'Pass').length;
+      const failed = Object.values(testResults).filter(r => r === 'Fail').length;
       await sendReportEmail({
-      to:         testData.email || process.env.TEST_EMAIL,
-        reportPath,
-        summary:    { total: 8, passed, failed },
-        results:    testResults,
+        to:      testData.email || process.env.TEST_EMAIL,
+        reportPath: 'playwright-report/index.html',
+        summary: { total: 8, passed, failed },
+        results: testResults,
       });
+    } catch (e) {
+      console.log('Email report skipped:', e.message);
     }
-  } catch (e) {
-    console.log('Email report skipped:', e.message);
   }
 });
+
+// test.afterAll(async () => {
+//   try {
+//     const fs = require('fs');
+//     const reportPath = 'playwright-report/index.html';
+//     const passed = Object.values(testResults).filter(r => r === 'Pass').length;
+//     const failed = Object.values(testResults).filter(r => r === 'Fail').length;
+//     // if (fs.existsSync(reportPath)) {  // HTML report is generated after afterAll runs
+//     await sendReportEmail({
+//       to:         testData.email || process.env.TEST_EMAIL,
+//       reportPath,
+//       summary:    { total: 8, passed, failed },
+//       results:    testResults,
+//     });
+//     // }
+//   } catch (e) {
+//     console.log('Email report skipped:', e.message);
+//   }
+// });
