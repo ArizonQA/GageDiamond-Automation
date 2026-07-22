@@ -48,9 +48,12 @@ class CartPage {
    */
   async proceedToCheckout() {
     await this.checkoutBtn.waitFor({ state: 'visible', timeout: TIMEOUTS.long });
+    // Wait for any cart overlays/loaders to settle before clicking
+    await this.page.waitForLoadState('networkidle', { timeout: TIMEOUTS.long });
     // JS click avoids overlay issues on the cart page
     await this.checkoutBtn.evaluate(btn => btn.click());
-    await this.page.waitForURL('**/checkout**', { timeout: TIMEOUTS.navigation });
+    // Wait for navigation away from cart — checkout may be on a different domain
+    await this.page.waitForURL('**/checkout**', { timeout: 45000 });
   }
 }
 
