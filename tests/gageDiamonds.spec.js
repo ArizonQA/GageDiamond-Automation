@@ -194,7 +194,9 @@ test.describe('Gage Diamonds - E2E Purchase Flow @smoke', () => {
 // Track per-test results so the email table reflects actual outcomes
 const testResults = {};
 
+// Only record the FINAL outcome (skip intermediate retry attempts)
 test.afterEach(async ({}, testInfo) => {
+  if (testInfo.retry < testInfo.project.retries && testInfo.status !== 'passed') return;
   const resultMap = {
     'TC-01: User Account Verification - Create if not exists @smoke': [1],
     'TC-02: Login with valid credentials and accept cookies @smoke':  [2],
@@ -203,39 +205,27 @@ test.afterEach(async ({}, testInfo) => {
   const status = testInfo.status === 'passed' ? 'Pass' : 'Fail';
   const snos = resultMap[testInfo.title] || [];
   snos.forEach(sno => { testResults[sno] = status; });
+});
 
-  // Send email after the last test completes (avoids afterAll timing issue with HTML report)
-  if (testInfo.title.includes('TC-03')) {
-    try {
-      const passed = Object.values(testResults).filter(r => r === 'Pass').length;
-      const failed = Object.values(testResults).filter(r => r === 'Fail').length;
-      await sendReportEmail({
-        to:      testData.email || process.env.TEST_EMAIL,
-        reportPath: 'playwright-report/index.html',
-        summary: { total: 8, passed, failed },
-        results: testResults,
-      });
-    } catch (e) {
-      console.log('Email report skipped:', e.message);
-    }
+// Send ONE email after all tests (including retries) have finished
+test.afterAll(async () => {
+  try {
+    const passed = Object.values(testResults).filter(r => r === 'Pass').length;
+    const failed = Object.values(testResults).filter(r => r === 'Fail').length;
+    await sendReportEmail({
+      to:         testData.email || process.env.TEST_EMAIL,
+      reportPath: 'playwright-report/index.html',
+      summary:    { total: 8, passed, failed },
+      results:    testResults,
+    });
+  } catch (e) {
+    console.log('Email report skipped:', e.message);
   }
 });
 
-// test.afterAll(async () => {
-//   try {
-//     const fs = require('fs');
-//     const reportPath = 'playwright-report/index.html';
-//     const passed = Object.values(testResults).filter(r => r === 'Pass').length;
-//     const failed = Object.values(testResults).filter(r => r === 'Fail').length;
-//     // if (fs.existsSync(reportPath)) {  // HTML report is generated after afterAll runs
-//     await sendReportEmail({
-//       to:         testData.email || process.env.TEST_EMAIL,
-//       reportPath,
-//       summary:    { total: 8, passed, failed },
-//       results:    testResults,
-//     });
-//     // }
-//   } catch (e) {
-//     console.log('Email report skipped:', e.message);
+// ── Previous afterEach email approach (caused multiple emails due to retries) ──
+// test.afterEach(async ({}, testInfo) => {
+//   if (testInfo.title.includes('TC-03')) {
+//     await sendReportEmail({ ... });
 //   }
 // });
