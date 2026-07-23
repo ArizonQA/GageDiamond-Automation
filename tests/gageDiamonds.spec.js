@@ -49,7 +49,7 @@ test.describe('Gage Diamonds - E2E Purchase Flow @smoke', () => {
     await page.goto('/login/');
     await loginPage.login(testData.username, testData.password);
 
-    await expect(page).not.toHaveURL(/\/login/);
+    await expect(page).not.toHaveURL(/login/);
     console.log('Login successful');
   });
 
@@ -188,12 +188,11 @@ test.describe('Gage Diamonds - E2E Purchase Flow @smoke', () => {
     }
   });
 
-  // ── Track results and send ONE email after all tests finish ─────────────────
+  // ── Track results — always overwrite so the last attempt (final retry) wins ──
   const testResults = {};
 
-  // Only record the FINAL outcome (skip intermediate retry attempts)
+  // Record every attempt; last write wins = final outcome after all retries
   test.afterEach(async ({}, testInfo) => {
-    if (testInfo.retry < testInfo.project.retries && testInfo.status !== 'passed') return;
     const resultMap = {
       'TC-01: User Account Verification - Create if not exists @smoke': [1],
       'TC-02: Login with valid credentials and accept cookies @smoke':  [2],
@@ -204,7 +203,7 @@ test.describe('Gage Diamonds - E2E Purchase Flow @smoke', () => {
     snos.forEach(sno => { testResults[sno] = status; });
   });
 
-  // Send ONE email after all tests (including retries) have finished
+  // Send ONE email after ALL tests (including retries) have finished
   test.afterAll(async () => {
     try {
       const passed = Object.values(testResults).filter(r => r === 'Pass').length;
